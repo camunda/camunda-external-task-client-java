@@ -12,6 +12,14 @@
  */
 package org.camunda.bpm.client.topic.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+
 import org.camunda.bpm.client.exception.ExternalTaskClientException;
 import org.camunda.bpm.client.impl.EngineClient;
 import org.camunda.bpm.client.impl.EngineClientException;
@@ -27,13 +35,6 @@ import org.camunda.bpm.client.topic.TopicSubscription;
 import org.camunda.bpm.client.topic.impl.dto.TopicRequestDto;
 import org.camunda.bpm.engine.variable.VariableMap;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * @author Tassilo Weidner
  */
@@ -45,25 +46,24 @@ public class TopicSubscriptionManager implements Runnable {
   protected List<TopicSubscription> subscriptions;
 
   protected boolean isRunning;
-  protected Thread thread;
+  protected boolean isStopped;
 
   protected VariableMappers variableMappers;
 
-  public TopicSubscriptionManager(EngineClient engineClient, VariableMappers variableMappers) {
+  public TopicSubscriptionManager(EngineClient engineClient, VariableMappers variableMappers, Executor executor) {
     this.engineClient = engineClient;
     this.subscriptions = new CopyOnWriteArrayList<>();
-    this.isRunning = true;
-
-    this.thread = new Thread(this, TopicSubscriptionManager.class.getSimpleName());
-    this.thread.start();
-
     this.variableMappers = variableMappers;
+    executor.execute(this);
   }
 
   public void run() {
-    while (isRunning) {
+    this.isStopped = false;
+    this.isRunning = true;
+    while (isRunning && !Thread.currentThread().isInterrupted()) {
       acquire();
     }
+    this.isStopped = true;
   }
 
   protected void acquire() {
@@ -98,8 +98,7 @@ public class TopicSubscriptionManager implements Runnable {
           variableMap = variableMappers.deserializeVariables(variableDtoMap);
           variablesDeserialized = true;
 
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
           if (e instanceof EngineClientException) {
             LOG.exceptionWhileDeserializingVariables(e.getMessage());
           } else {
@@ -135,7 +134,9 @@ public class TopicSubscriptionManager implements Runnable {
     isRunning = false;
 
     try {
-      thread.join();
+      while (!this.isStopped) {
+        Thread.currentThread().join(1);
+      }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       LOG.exceptionWhileShuttingDown(e);

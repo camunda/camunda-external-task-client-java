@@ -12,15 +12,17 @@
  */
 package org.camunda.bpm.client.impl;
 
-import org.camunda.bpm.client.ExternalTaskClient;
-import org.camunda.bpm.client.ExternalTaskClientBuilder;
-import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import org.camunda.bpm.client.ExternalTaskClient;
+import org.camunda.bpm.client.ExternalTaskClientBuilder;
+import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
 
 /**
  * @author Tassilo Weidner
@@ -30,6 +32,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
   protected static final ExternalTaskClientLogger LOG = ExternalTaskClientLogger.CLIENT_LOGGER;
 
   protected String baseUrl;
+  protected Executor executor;
   protected String workerId;
   protected List<ClientRequestInterceptor> interceptors;
 
@@ -39,6 +42,12 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   public ExternalTaskClientBuilder baseUrl(String baseUrl) {
     this.baseUrl = baseUrl;
+    return this;
+  }
+
+  @Override
+  public ExternalTaskClientBuilder executor(Executor executor) {
+    this.executor = executor;
     return this;
   }
 
@@ -52,12 +61,20 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
       throw LOG.baseUrlNullException();
     }
 
+    if (executor == null) {
+      executor = getDefaultExecutor();
+    }
+
     checkInterceptors();
 
     String hostname = checkHostname();
     this.workerId = hostname + UUID.randomUUID();
 
     return new ExternalTaskClientImpl(this);
+  }
+
+  protected Executor getDefaultExecutor() {
+    return Executors.newSingleThreadScheduledExecutor();
   }
 
   protected void checkInterceptors() {
@@ -93,6 +110,10 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   protected List<ClientRequestInterceptor> getInterceptors() {
     return interceptors;
+  }
+
+  protected Executor getExecutor() {
+    return executor;
   }
 
 }
