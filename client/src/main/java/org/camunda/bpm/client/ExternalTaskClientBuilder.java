@@ -12,26 +12,40 @@
  */
 package org.camunda.bpm.client;
 
+import java.util.concurrent.Executor;
+
 import org.camunda.bpm.client.exception.ExternalTaskClientException;
 import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
 
 /**
- * <p>A fluent builder to configure the Camunda client</p>
+ * <p>
+ * A fluent builder to configure the Camunda client
+ * </p>
  *
  * @author Tassilo Weidner
  */
 public interface ExternalTaskClientBuilder {
 
   /**
-   * @param baseUrl of the Camunda BPM Platform REST API
+   * @param baseUrl
+   *          of the Camunda BPM Platform REST API
    * @return the builder
    */
   ExternalTaskClientBuilder baseUrl(String baseUrl);
 
   /**
-   * Adds an interceptor to change a request before it is sent to the http server
+   * @param executor
+   *          to use for execution of tasks
+   * @return the builder
+   */
+  ExternalTaskClientBuilder executor(Executor executor);
+
+  /**
+   * Adds an interceptor to change a request before it is sent to the http
+   * server
    *
-   * @param interceptor which changes the request
+   * @param interceptor
+   *          which changes the request
    * @return the builder
    */
   ExternalTaskClientBuilder addInterceptor(ClientRequestInterceptor interceptor);
@@ -48,11 +62,10 @@ public interface ExternalTaskClientBuilder {
    * Bootstraps the Camunda client
    *
    * @throws ExternalTaskClientException
-   * <ul>
-   *   <li> if base url is null or string is empty
-   *   <li> if hostname cannot be retrieved
-   *   <li> if maximum amount of tasks is not greater than zero
-   * </ul>
+   *           <ul>
+   *           <li>if base url is null or string is empty
+   *           <li>if hostname cannot be retrieved
+   *           </ul>
    * @return the builder
    */
   ExternalTaskClient build();
