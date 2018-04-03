@@ -12,8 +12,8 @@
  */
 package org.camunda.bpm.client.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+
 import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.impl.variable.VariableMappers;
 import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
@@ -22,7 +22,8 @@ import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.camunda.bpm.client.topic.impl.TopicSubscriptionBuilderImpl;
 import org.camunda.bpm.client.topic.impl.TopicSubscriptionManager;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Tassilo Weidner
@@ -45,7 +46,7 @@ public class ExternalTaskClientImpl implements ExternalTaskClient {
     ObjectMapper objectMapper = initObjectMapper();
     VariableMappers variableMappers = new VariableMappers(objectMapper);
     EngineClient engineClient = new EngineClient(workerId, maxTasks, baseUrl, requestInterceptorHandler, variableMappers, objectMapper);
-    topicSubscriptionManager = new TopicSubscriptionManager(engineClient, variableMappers);
+    topicSubscriptionManager = new TopicSubscriptionManager(engineClient, variableMappers, clientBuilder.getExecutor());
   }
 
   public TopicSubscriptionBuilder subscribe(String topicName) {

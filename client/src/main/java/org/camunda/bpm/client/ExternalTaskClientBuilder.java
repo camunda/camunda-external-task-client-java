@@ -12,6 +12,8 @@
  */
 package org.camunda.bpm.client;
 
+import java.util.concurrent.Executor;
+
 import org.camunda.bpm.client.exception.ExternalTaskClientException;
 import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
 
@@ -41,6 +43,13 @@ public interface ExternalTaskClientBuilder {
    * @return the builder
    */
   ExternalTaskClientBuilder workerId(String workerId);
+
+  /**
+   * @param executor
+   *          to use for execution of tasks
+   * @return the builder
+   */
+  ExternalTaskClientBuilder executor(Executor executor);
 
   /**
    * Adds an interceptor to change a request before it is sent to the http server.
