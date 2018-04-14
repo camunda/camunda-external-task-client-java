@@ -18,15 +18,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import org.camunda.bpm.client.ClientBackOffStrategy;
-import org.camunda.bpm.client.exception.ExternalTaskClientException;
 import org.camunda.bpm.client.impl.EngineClient;
 import org.camunda.bpm.client.impl.EngineClientException;
 import org.camunda.bpm.client.impl.ExternalTaskClientLogger;
-import org.camunda.bpm.client.impl.variable.TypedValueField;
 import org.camunda.bpm.client.impl.variable.TypedValues;
-import org.camunda.bpm.client.impl.variable.VariableValue;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
@@ -56,20 +55,22 @@ public class TopicSubscriptionManager implements Runnable {
 
   protected long clientLockDuration;
 
-  public TopicSubscriptionManager(EngineClient engineClient, TypedValues typedValues, long clientLockDuration) {
+  protected ExecutorService taskHandlerExecutorService;
+
+  public TopicSubscriptionManager(EngineClient engineClient, TypedValues typedValues, long clientLockDuration, ExecutorService taskHandlerExecutorService) {
     this.engineClient = engineClient;
     this.subscriptions = new CopyOnWriteArrayList<>();
     this.isRunning = false;
     this.clientLockDuration = clientLockDuration;
     this.typedValues = typedValues;
+    this.taskHandlerExecutorService = taskHandlerExecutorService;
   }
 
   public void run() {
     while (isRunning) {
       try {
         acquire();
-      }
-      catch (Throwable e) {
+      } catch (Throwable e) {
         // TODO: log exception
       }
     }
@@ -91,17 +92,7 @@ public class TopicSubscriptionManager implements Runnable {
     if (!taskTopicRequests.isEmpty()) {
       List<ExternalTask> externalTasks = fetchAndLock(taskTopicRequests);
 
-      externalTasks.forEach(externalTask -> {
-        String topicName = externalTask.getTopicName();
-        ExternalTaskHandler taskHandler = externalTaskHandlers.get(topicName);
-
-        if (taskHandler != null) {
-          handleExternalTask(externalTask, taskHandler);
-        }
-        else {
-          // TODO: log
-        }
-      });
+      handleExternalTasks(externalTasks, externalTaskHandlers);
 
       try {
         if (backOffStrategy != null && externalTasks.isEmpty()) {
@@ -127,21 +118,22 @@ public class TopicSubscriptionManager implements Runnable {
     return externalTasks;
   }
 
-  protected void handleExternalTask(ExternalTask externalTask, ExternalTaskHandler taskHandler) {
-    ExternalTaskImpl task = (ExternalTaskImpl) externalTask;
-
-    Map<String, TypedValueField> variables = task.getVariables();
-    Map<String, VariableValue> deserializeVariables = typedValues.deserializeVariables(variables);
-    task.setReceivedVariableMap(deserializeVariables);
-
-    ExternalTaskService service = new ExternalTaskServiceImpl(externalTask.getId(), engineClient);
-
+  protected void handleExternalTasks(List<ExternalTask> externalTasks, Map<String, ExternalTaskHandler> externalTaskHandlers) {
     try {
-      taskHandler.execute(task, service);
-    } catch (ExternalTaskClientException e) {
-      LOG.exceptionOnExternalTaskServiceMethodInvocation(e);
-    } catch (Throwable e) {
-      LOG.exceptionWhileExecutingExternalTaskHandler(e);
+      // invoke and wait that all complete
+      taskHandlerExecutorService.invokeAll(externalTasks.stream().map(externalTask -> {
+        String topicName = externalTask.getTopicName();
+        ExternalTaskHandler taskHandler = externalTaskHandlers.get(topicName);
+
+        if (taskHandler == null) {
+          // TODO: log
+          return null;
+        }
+        ExternalTaskService service = new ExternalTaskServiceImpl(externalTask.getId(), engineClient);
+        return new ExternalTaskHandlerCallable((ExternalTaskImpl) externalTask, taskHandler, service, typedValues);
+      }).collect(Collectors.toList()));
+    } catch (InterruptedException e) {
+      LOG.exceptionWhileShuttingDown(e);
     }
   }
 

@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.camunda.bpm.client.ClientBackOffStrategy;
 import org.camunda.bpm.client.ExternalTaskClient;
@@ -78,6 +80,8 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
   protected boolean isAutoFetchingEnabled;
   protected ClientBackOffStrategy backOffStrategy;
 
+  protected ExecutorService taskHandlerExecutorService;
+
   public ExternalTaskClientBuilderImpl() {
     // default values
     this.maxTasks = 10;
@@ -85,6 +89,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
     this.lockDuration = 20_000;
     this.isAutoFetchingEnabled = true;
     this.interceptors = new ArrayList<>();
+    this.taskHandlerExecutorService = Executors.newSingleThreadExecutor();
   }
 
   public ExternalTaskClientBuilder baseUrl(String baseUrl) {
@@ -137,6 +142,11 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
     return this;
   }
 
+  public ExternalTaskClientBuilder taskHandlerExecutorService(ExecutorService executorService) {
+    this.taskHandlerExecutorService = executorService;
+    return this;
+  }
+
   public ExternalTaskClient build() {
     if (maxTasks <= 0) {
       throw LOG.maxTasksNotGreaterThanZeroException();
@@ -152,6 +162,10 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
     if (baseUrl == null || baseUrl.isEmpty()) {
       throw LOG.baseUrlNullException();
+    }
+
+    if (taskHandlerExecutorService == null) {
+      throw LOG.taskHandlerExecutorServiceNullException();
     }
 
     checkInterceptors();
@@ -232,7 +246,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
   }
 
   protected void initTopicSubscriptionManager() {
-    topicSubscriptionManager = new TopicSubscriptionManager(engineClient, typedValues, lockDuration);
+    topicSubscriptionManager = new TopicSubscriptionManager(engineClient, typedValues, lockDuration, taskHandlerExecutorService);
 
     if (getBackOffStrategy() != null) {
       topicSubscriptionManager.setBackOffStrategy(getBackOffStrategy());
@@ -254,16 +268,16 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
       Set<DataFormat<?>> availableDataFormats = DataFormats.getAvailableDataFormats();
       for (DataFormat<?> dataFormat : availableDataFormats) {
-        serializers.add(new SpinObjectValueMapper("spin://"+dataFormat.getName(), dataFormat));
+        serializers.add(new SpinObjectValueMapper("spin://" + dataFormat.getName(), dataFormat));
       }
 
       if (isSpinValuesAvailable()) {
         DataFormats dataFormats = DataFormats.getInstance();
-        if(dataFormats.getDataFormatByName(DataFormats.JSON_DATAFORMAT_NAME) != null) {
+        if (dataFormats.getDataFormatByName(DataFormats.JSON_DATAFORMAT_NAME) != null) {
           DataFormat<SpinJsonNode> jsonDataFormat = (DataFormat<SpinJsonNode>) dataFormats.getDataFormatByName(DataFormats.JSON_DATAFORMAT_NAME);
           serializers.add(new JsonValueMapper(jsonDataFormat));
         }
-        if(dataFormats.getDataFormatByName(DataFormats.XML_DATAFORMAT_NAME) != null){
+        if (dataFormats.getDataFormatByName(DataFormats.XML_DATAFORMAT_NAME) != null) {
           DataFormat<SpinXmlElement> xmlDataFormat = (DataFormat<SpinXmlElement>) dataFormats.getDataFormatByName(DataFormats.XML_DATAFORMAT_NAME);
           serializers.add(new XmlValueMapper(xmlDataFormat));
         }
@@ -273,7 +287,6 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
     return serializers;
   }
-
 
   protected boolean isDataFormatsAvailable() {
     boolean isAvailable = false;
