@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ExponentialBackoffStrategyTest {
 
-  protected ExponentialBackoffStrategy backoffStrategy;
+  protected BackoffStrategy backoffStrategy;
 
   @Before
   public void setup() {
