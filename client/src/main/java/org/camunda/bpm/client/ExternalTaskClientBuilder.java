@@ -80,9 +80,10 @@ public interface ExternalTaskClientBuilder {
   ExternalTaskClientBuilder dateFormat(String dateFormat);
 
   /**
+   * Asynchronous response (long polling) is enabled if a timeout is given.
    * Specifies the maximum waiting time for the response of fetched and locked external tasks.
    * The response is performed immediately, if external tasks are available in the moment of the request.
-   * This information is optional.
+   * This information is optional. Unless a timeout is given, fetch and lock responses are synchronous.
    *
    * @param asyncResponseTimeout of fetched and locked external tasks
    * @return the builder
@@ -110,7 +111,7 @@ public interface ExternalTaskClientBuilder {
 
   /**
    * Adds a custom strategy to the client for defining the org.camunda.bpm.client.backoff between two requests.
-   * This information is optional. Default is {@link ExponentialBackoffStrategy}
+   * This information is optional. By default {@link ExponentialBackoffStrategy} is applied.
    *
    * @param backoffStrategy which realizes a custom org.camunda.bpm.client.backoff strategy
    * @return the builder

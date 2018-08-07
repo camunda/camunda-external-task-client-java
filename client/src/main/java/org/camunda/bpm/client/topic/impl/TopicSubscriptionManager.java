@@ -72,7 +72,7 @@ public class TopicSubscriptionManager implements Runnable {
     this.externalTaskHandlers = new HashMap<>();
     this.clientLockDuration = clientLockDuration;
     this.typedValues = typedValues;
-    externalTaskService = new ExternalTaskServiceImpl(engineClient);
+    this.externalTaskService = new ExternalTaskServiceImpl(engineClient);
   }
 
   public void run() {
