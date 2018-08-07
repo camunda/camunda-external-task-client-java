@@ -80,9 +80,9 @@ public interface ExternalTaskClientBuilder {
   ExternalTaskClientBuilder dateFormat(String dateFormat);
 
   /**
-   * Specifies the maximum waiting time for the response of fetched and locked external tasks.
-   * The response is performed immediately, if external tasks are available in the moment of the request.
-   * This information is optional.
+   * Specifies the Long Polling timeout in milliseconds. 
+   * The response is performed immediately, if external tasks are available in the moment of the request (Long Polling).
+   * This information is optional. Usage of Long Polling is disabled by default.
    *
    * @param asyncResponseTimeout of fetched and locked external tasks
    * @return the builder
