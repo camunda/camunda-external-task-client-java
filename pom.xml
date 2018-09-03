@@ -6,7 +6,7 @@
 
   <groupId>org.camunda.bpm</groupId>
   <artifactId>camunda-external-task-client-root</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
