@@ -17,6 +17,7 @@ package org.camunda.bpm.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -164,7 +165,10 @@ public class RequestExecutor {
   }
 
   protected void initHttpClient(RequestInterceptorHandler requestInterceptorHandler) {
+    final long ttl = Long.parseLong(System.getProperty("camunda.httpclient.ttl", "-1"));
+
     HttpClientBuilder httpClientBuilder = HttpClients.custom()
+      .setConnectionTimeToLive(ttl, TimeUnit.SECONDS)
       .useSystemProperties()
       .addInterceptorLast(requestInterceptorHandler);
 
