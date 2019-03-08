@@ -156,8 +156,13 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
       throw LOG.maxTasksNotGreaterThanZeroException(maxTasks);
     }
 
-    if (asyncResponseTimeout != null && asyncResponseTimeout <= 0) {
-      throw LOG.asyncResponseTimeoutNotGreaterThanZeroException(asyncResponseTimeout);
+    if (asyncResponseTimeout != null) {
+      if ( asyncResponseTimeout == 0) {
+        throw LOG.asyncResponseTimeoutNotGreaterThanZeroException(asyncResponseTimeout);
+      }
+      if (asyncResponseTimeout == -1) {
+        LOG.logInfo("?","asyncResponseTimeout disabled",null);
+      }
     }
 
     if (lockDuration <= 0L) {
