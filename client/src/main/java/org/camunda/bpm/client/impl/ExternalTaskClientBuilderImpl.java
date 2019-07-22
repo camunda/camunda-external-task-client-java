@@ -16,6 +16,9 @@
  */
 package org.camunda.bpm.client.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -25,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.UUID;
-
 import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.ExternalTaskClientBuilder;
 import org.camunda.bpm.client.backoff.BackoffStrategy;
 import org.camunda.bpm.client.backoff.ExponentialBackoffStrategy;
+import org.camunda.bpm.client.impl.executor.RequestExecutor;
+import org.camunda.bpm.client.impl.executor.RequestExecutorBuilder;
+import org.camunda.bpm.client.impl.executor.impl.RequestExecutorBuilderHttpComponents;
 import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
 import org.camunda.bpm.client.interceptor.impl.RequestInterceptorHandler;
 import org.camunda.bpm.client.spi.DataFormat;
@@ -53,10 +58,6 @@ import org.camunda.bpm.client.variable.impl.mapper.ShortValueMapper;
 import org.camunda.bpm.client.variable.impl.mapper.StringValueMapper;
 import org.camunda.bpm.client.variable.impl.mapper.XmlValueMapper;
 import org.camunda.bpm.engine.variable.Variables;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * @author Tassilo Weidner
@@ -85,6 +86,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
   protected boolean isAutoFetchingEnabled;
   protected BackoffStrategy backoffStrategy;
   protected boolean isBackoffStrategyDisabled;
+  protected RequestExecutorBuilder requestExecutorBuilder;
 
   public ExternalTaskClientBuilderImpl() {
     // default values
@@ -95,6 +97,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
     this.isAutoFetchingEnabled = true;
     this.backoffStrategy = new ExponentialBackoffStrategy();
     this.isBackoffStrategyDisabled = false;
+    this.requestExecutorBuilder = new RequestExecutorBuilderHttpComponents();
   }
 
   public ExternalTaskClientBuilder baseUrl(String baseUrl) {
@@ -134,6 +137,11 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   public ExternalTaskClientBuilder backoffStrategy(BackoffStrategy backoffStrategy) {
     this.backoffStrategy = backoffStrategy;
+    return this;
+  }
+
+  public ExternalTaskClientBuilder requestExecutorBuilder(RequestExecutorBuilder requestExecutorBuilder) {
+    this.requestExecutorBuilder = requestExecutorBuilder;
     return this;
   }
 
@@ -255,7 +263,10 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   protected void initEngineClient() {
     RequestInterceptorHandler requestInterceptorHandler = new RequestInterceptorHandler(interceptors);
-    RequestExecutor requestExecutor = new RequestExecutor(requestInterceptorHandler, objectMapper);
+    RequestExecutor requestExecutor = requestExecutorBuilder
+        .withInterceptor(requestInterceptorHandler)
+        .withObjectMapper(objectMapper)
+        .build();
     engineClient = new EngineClient(workerId, maxTasks, asyncResponseTimeout, baseUrl, requestExecutor);
   }
 

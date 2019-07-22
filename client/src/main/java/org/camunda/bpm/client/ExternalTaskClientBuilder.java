@@ -19,6 +19,7 @@ package org.camunda.bpm.client;
 import org.camunda.bpm.client.backoff.BackoffStrategy;
 import org.camunda.bpm.client.backoff.ExponentialBackoffStrategy;
 import org.camunda.bpm.client.exception.ExternalTaskClientException;
+import org.camunda.bpm.client.impl.executor.RequestExecutorBuilder;
 import org.camunda.bpm.client.interceptor.ClientRequestInterceptor;
 
 /**
@@ -121,6 +122,15 @@ public interface ExternalTaskClientBuilder {
    * @return the builder
    */
   ExternalTaskClientBuilder backoffStrategy(BackoffStrategy backoffStrategy);
+
+  /**
+   * Adds a custom builder to the client for defining the {@link org.camunda.bpm.client.impl.executor.RequestExecutor}.
+   * This information is optional. By default {@link org.camunda.bpm.client.impl.executor.impl.RequestExecutorBuilderHttpComponents} is applied.
+   *
+   * @param requestExecutorBuilder which realizes a custom http client strategy
+   * @return the builder
+   */
+  ExternalTaskClientBuilder requestExecutorBuilder(RequestExecutorBuilder requestExecutorBuilder);
 
   /**
    * Disables the client-side backoff strategy. On invocation, the configuration option {@link #backoffStrategy} is ignored.

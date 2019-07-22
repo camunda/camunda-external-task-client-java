@@ -19,7 +19,7 @@ package org.camunda.bpm.client.impl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
+import org.camunda.bpm.client.impl.executor.RequestExecutor;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.impl.ExternalTaskImpl;
 import org.camunda.bpm.client.task.impl.dto.BpmnErrorRequestDto;

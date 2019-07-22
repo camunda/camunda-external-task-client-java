@@ -16,9 +16,12 @@
  */
 package org.camunda.bpm.client.impl;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -32,22 +35,15 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.AbstractResponseHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.camunda.bpm.client.interceptor.impl.RequestInterceptorHandler;
+import org.camunda.bpm.client.impl.executor.RequestExecutor;
 import org.camunda.commons.utils.IoUtil;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Tassilo Weidner
  */
-public class RequestExecutor {
+public class HttpComponentsRequestExecutor implements RequestExecutor {
 
   protected static final EngineClientLogger LOG = ExternalTaskClientLogger.ENGINE_CLIENT_LOGGER;
 
@@ -57,13 +53,13 @@ public class RequestExecutor {
   protected HttpClient httpClient;
   protected ObjectMapper objectMapper;
 
-  protected RequestExecutor(RequestInterceptorHandler requestInterceptorHandler, ObjectMapper objectMapper) {
+  public HttpComponentsRequestExecutor(HttpClient httpClient, ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
-
-    initHttpClient(requestInterceptorHandler);
+    this.httpClient = httpClient;
   }
 
-  protected <T> T postRequest(String resourceUrl, RequestDto requestDto, Class<T> responseClass) throws EngineClientException {
+  @Override
+  public <T> T postRequest(String resourceUrl, RequestDto requestDto, Class<T> responseClass) throws EngineClientException {
     ByteArrayEntity serializedRequest = serializeRequest(requestDto);
     HttpUriRequest httpRequest = RequestBuilder.post(resourceUrl)
       .addHeader(HEADER_USER_AGENT)
@@ -74,7 +70,8 @@ public class RequestExecutor {
     return executeRequest(httpRequest, responseClass);
   }
 
-  protected byte[] getRequest(String resourceUrl) throws EngineClientException {
+  @Override
+  public byte[] getRequest(String resourceUrl) throws EngineClientException {
     HttpUriRequest httpRequest = RequestBuilder.get(resourceUrl)
       .addHeader(HEADER_USER_AGENT)
       .addHeader(HEADER_CONTENT_TYPE_JSON)
@@ -83,7 +80,7 @@ public class RequestExecutor {
     return executeRequest(httpRequest, byte[].class);
   }
 
-  protected <T> T executeRequest(HttpUriRequest httpRequest, Class<T> responseClass) throws EngineClientException {
+  protected  <T> T executeRequest(HttpUriRequest httpRequest, Class<T> responseClass) throws EngineClientException {
     try {
       return httpClient.execute(httpRequest, handleResponse(responseClass));
     } catch (RuntimeException e) {
@@ -182,14 +179,6 @@ public class RequestExecutor {
     }
 
     return byteArrayEntity;
-  }
-
-  protected void initHttpClient(RequestInterceptorHandler requestInterceptorHandler) {
-    HttpClientBuilder httpClientBuilder = HttpClients.custom()
-      .useSystemProperties()
-      .addInterceptorLast(requestInterceptorHandler);
-
-    this.httpClient = httpClientBuilder.build();
   }
 
 }
