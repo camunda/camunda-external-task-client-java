@@ -16,12 +16,8 @@
  */
 package org.camunda.bpm.client.impl;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +72,6 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   protected String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
-  protected ObjectMapper objectMapper;
   protected ValueMappers valueMappers;
   protected TypedValues typedValues;
   protected EngineClient engineClient;
@@ -181,7 +176,6 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
     initBaseUrl();
     initWorkerId();
-    initObjectMapper();
     initEngineClient();
     initVariableMappers();
     initTopicSubscriptionManager();
@@ -217,16 +211,6 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
     });
   }
 
-  protected void initObjectMapper() {
-    objectMapper = new ObjectMapper();
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS, false);
-    objectMapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
-
-    SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-    objectMapper.setDateFormat(sdf);
-    objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-  }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   protected void initVariableMappers() {
@@ -265,7 +249,7 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
     RequestInterceptorHandler requestInterceptorHandler = new RequestInterceptorHandler(interceptors);
     RequestExecutor requestExecutor = requestExecutorBuilder
         .withInterceptor(requestInterceptorHandler)
-        .withObjectMapper(objectMapper)
+        .withDateFormat(dateFormat)
         .build();
     engineClient = new EngineClient(workerId, maxTasks, asyncResponseTimeout, baseUrl, requestExecutor);
   }
@@ -388,10 +372,6 @@ public class ExternalTaskClientBuilderImpl implements ExternalTaskClientBuilder 
 
   public String getDateFormat() {
     return dateFormat;
-  }
-
-  public ObjectMapper getObjectMapper() {
-    return objectMapper;
   }
 
   public ValueMappers getValueMappers() {

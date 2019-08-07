@@ -78,6 +78,7 @@ public interface ExternalTaskClientBuilder {
 
   /**
    * Specifies the date format to de-/serialize date variables.
+   * This information is optional. Default is "yyyy-MM-dd'T'HH:mm:ss.SSSZ".
    *
    * @param dateFormat date format to be used
    * @return the builder
