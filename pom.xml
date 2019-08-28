@@ -36,7 +36,7 @@
     <!-- disable javadoc linter for JDK8 to not fail on incomplete javadoc -->
     <additionalparam>-Xdoclint:none</additionalparam>
 
-    <version.plugin.license>1.14</version.plugin.license>
+    <version.plugin.license>2.0.0</version.plugin.license>
   </properties>
 
   <dependencyManagement>
