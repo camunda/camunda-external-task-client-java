@@ -17,7 +17,7 @@
     <camunda.version>7.9.0</camunda.version>
 
     <version.httpclient>4.5.7</version.httpclient>
-    <version.jackson>2.9.9.3</version.jackson>
+    <version.jackson>2.10.0</version.jackson>
 
     <version.plugin.surefire>2.16</version.plugin.surefire>
     <version.plugin.failsafe>2.20</version.plugin.failsafe>
@@ -162,6 +162,22 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>jdk-9-plus</id>
+      <activation>
+        <jdk>(1.8,)</jdk>
+      </activation>
+
+      <dependencies>
+        <dependency>
+          <groupId>com.sun.xml.bind</groupId>
+          <artifactId>jaxb-impl</artifactId>
+          <version>${version.jaxb}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+
     <profile>
       <id>it</id>
 
