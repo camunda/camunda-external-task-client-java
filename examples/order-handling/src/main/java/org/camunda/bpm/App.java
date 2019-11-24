@@ -17,7 +17,7 @@
 package org.camunda.bpm;
 
 import org.camunda.bpm.client.ExternalTaskClient;
-import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.client.variable.ClientValues;
 import org.camunda.bpm.engine.variable.value.ObjectValue;
 
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public class App {
         Invoice invoice = new Invoice("A123");
 
         // create an object typed variable with the serialization format XML
-        ObjectValue invoiceValue = Variables
+        ObjectValue invoiceValue = ClientValues
           .objectValue(invoice)
           .serializationDataFormat("application/xml")
           .create();

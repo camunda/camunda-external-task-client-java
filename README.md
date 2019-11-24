@@ -17,6 +17,24 @@ The **Camunda External Task Client (Java)** allows to set up remote Service Task
 * Report BPMN errors as well as failures
 * Share primitive and object typed process variables with the Workflow Engine
 
+### Howto use typed variables
+```java
+JsonValue jsonCustomer = externalTask.getVariableTyped("customer");
+// deserialize to customer object and modify
+variables.put("customer", ClientValues.jsonValue(customerJsonString));
+
+XmlValue xmlContract = externalTask.getvariableTyped("contract");
+// deserialize to contract object and modify value
+variables.put("contract", ClientValues.xmlValue(contractXmlString));
+
+Invoice invoice = externalTask.getVariableTyped("invoice");
+// modify invoice object
+variables.put("invoice", ClientValue.objectValue(invoice)
+    .serializationDataFormat("application/xml").create();
+
+externalTaskService.complete(externalTask, variables);
+```
+
 ## Configuration options
 * The client can be configured with the fluent api of the [ExternalTaskClientBuilder](client/src/main/java/org/camunda/bpm/client/ExternalTaskClientBuilder.java). 
 * The topic subscription can be configured with the fluent api of the [TopicSubscriptionBuilder](client/src/main/java/org/camunda/bpm/client/topic/TopicSubscriptionBuilder.java).
