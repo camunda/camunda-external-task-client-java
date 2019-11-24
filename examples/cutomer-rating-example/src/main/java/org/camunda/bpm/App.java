@@ -25,6 +25,8 @@ import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.topic.TopicSubscriptionBuilder;
 import org.camunda.bpm.client.variable.ClientValues;
+import org.camunda.bpm.client.variable.value.JsonValue;
+import org.camunda.bpm.client.variable.value.XmlValue;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
 
@@ -78,9 +80,24 @@ public class App {
         
       });
     
+    TopicSubscriptionBuilder readSubscrptionBuilder = client.subscribe("customerReading")
+      .lockDuration(20000)
+      .handler((externalTask, externalTaskService) -> {
+        String dataformat = externalTask.getVariable("dataFormat");
+        if ("json".equals(dataformat)) {
+          JsonValue jsonCustomer = externalTask.getVariableTyped("customer");
+          System.out.println("Customer json: " + jsonCustomer.getValue());
+        } else if ("xml".equals(dataformat)) {
+          XmlValue xmlCustomer = externalTask.getVariableTyped("customer");
+          System.out.println("Customer xml: " + xmlCustomer.getValue());
+        }
+        externalTaskService.complete(externalTask);
+      });
+    
     client.start();
     xmlSubscriptionBuilder.open();
     jsonSubscriptionBuilder.open();
+    readSubscrptionBuilder.open();
   }
 
   private static Customer createCustomerFromVariables(ExternalTask externalTask) {

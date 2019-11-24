@@ -19,6 +19,7 @@ package org.camunda.bpm;
 import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.variable.ClientValues;
 import org.camunda.bpm.engine.variable.value.ObjectValue;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +62,14 @@ public class App {
         System.out.println("The External Task " + externalTask.getId() +
           " has been completed!");
 
+      }).open();
+    
+    client.subscribe("invoiceArchiver")
+      .handler((externalTask, externalTaskService) -> {
+        TypedValue typedInvoice = externalTask.getVariableTyped("invoice");
+        Invoice invoice = (Invoice) typedInvoice.getValue();
+        System.out.println("Invoice on process scope archived: " + invoice);
+        externalTaskService.complete(externalTask);
       }).open();
   }
 

@@ -20,14 +20,17 @@ The **Camunda External Task Client (Java)** allows to set up remote Service Task
 ### Howto use typed variables
 ```java
 JsonValue jsonCustomer = externalTask.getVariableTyped("customer");
-// deserialize to customer object and modify
+// deserialize jsonCustomer.getValue() to customer object 
+// and modify ...
 variables.put("customer", ClientValues.jsonValue(customerJsonString));
 
 XmlValue xmlContract = externalTask.getvariableTyped("contract");
-// deserialize to contract object and modify value
+// deserialize xmlContract.getValue() to contract object
+// and modify ...
 variables.put("contract", ClientValues.xmlValue(contractXmlString));
 
-Invoice invoice = externalTask.getVariableTyped("invoice");
+TypedValue typedInvoice = externalTask.getVariableTyped("invoice");
+Invoice invoice = (Invoice) typedInvoice.getValue();
 // modify invoice object
 variables.put("invoice", ClientValue.objectValue(invoice)
     .serializationDataFormat("application/xml").create();
