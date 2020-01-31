@@ -23,7 +23,7 @@
     <version.plugin.surefire>2.16</version.plugin.surefire>
     <version.plugin.failsafe>2.22.0</version.plugin.failsafe>
     <version.plugin.helper>3.0.0</version.plugin.helper>
-    <version.plugin.cargo>1.6.10</version.plugin.cargo>
+    <version.plugin.cargo>1.7.10</version.plugin.cargo>
 
     <version.junit>4.10</version.junit>
     <version.slf4j>1.6.1</version.slf4j>
