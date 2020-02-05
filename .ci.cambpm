@@ -1,2 +1,7 @@
 @Library("camunda-ci") _
-buildMavenAndDeployToMavenCentral([jdk:8, mvn:3.5, mvnGoals:'javadoc:javadoc', mvnProfiles:'it'])
+buildMavenAndDeployToMavenCentral([
+  jdk:8,
+  mvn:3.5,
+  mvnGoals:'javadoc:javadoc',
+  mvnProfiles:'it'
+])
