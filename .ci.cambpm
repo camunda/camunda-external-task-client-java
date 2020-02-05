@@ -2,6 +2,6 @@
 buildMavenAndDeployToMavenCentral([
   jdk:8,
   mvn:3.5,
-  mvnGoals:'javadoc:javadoc',
+  additionalMvnGoals:'javadoc:javadoc',
   mvnProfiles:'it'
 ])
