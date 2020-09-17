@@ -26,6 +26,8 @@ import org.camunda.bpm.client.task.impl.dto.BpmnErrorRequestDto;
 import org.camunda.bpm.client.task.impl.dto.CompleteRequestDto;
 import org.camunda.bpm.client.task.impl.dto.ExtendLockRequestDto;
 import org.camunda.bpm.client.task.impl.dto.FailureRequestDto;
+import org.camunda.bpm.client.task.impl.dto.VariableInstanceRequestDto;
+import org.camunda.bpm.client.task.impl.dto.VariableInstanceResponseDto;
 import org.camunda.bpm.client.topic.impl.dto.FetchAndLockRequestDto;
 import org.camunda.bpm.client.topic.impl.dto.TopicRequestDto;
 import org.camunda.bpm.client.variable.impl.TypedValueField;
@@ -47,9 +49,9 @@ public class EngineClient {
   public static final String EXTEND_LOCK_RESOURCE_PATH = ID_RESOURCE_PATH + "/extendLock";
   public static final String NAME_PATH_PARAM = "{name}";
   public static final String EXECUTION_RESOURCE_PATH = "/execution";
+  public static final String VARIABLE_INSTANCE_PATH = "/variable-instance";
   public static final String EXECUTION_ID_RESOURCE_PATH = EXECUTION_RESOURCE_PATH + "/" + ID_PATH_PARAM;
-  public static final String GET_LOCAL_VARIABLE =  EXECUTION_ID_RESOURCE_PATH + "/localVariables/" + NAME_PATH_PARAM;
-  public static final String GET_LOCAL_BINARY_VARIABLE =  GET_LOCAL_VARIABLE + "/data";
+  public static final String GET_VARIABLE_INSTANCE_BINARY_VARIABLE = VARIABLE_INSTANCE_PATH + "/" + ID_PATH_PARAM + "/data";
 
   protected String baseUrl;
   protected String workerId;
@@ -118,9 +120,12 @@ public class EngineClient {
   }
 
   public byte[] getLocalBinaryVariable(String variableName, String processInstanceId) throws EngineClientException {
-    String resourcePath = baseUrl + GET_LOCAL_BINARY_VARIABLE
-      .replace(ID_PATH_PARAM, processInstanceId)
-      .replace(NAME_PATH_PARAM, variableName);
+    VariableInstanceResponseDto[] variables = engineInteraction.postRequest(baseUrl + VARIABLE_INSTANCE_PATH, new VariableInstanceRequestDto(workerId, processInstanceId, variableName), VariableInstanceResponseDto[].class);
+    if(variables.length != 1){
+        throw new EngineClientException("Unexpected count of variables returned " + variables.length + " expected count 1.");
+    }
+    String resourcePath = baseUrl + GET_VARIABLE_INSTANCE_BINARY_VARIABLE
+            .replace(ID_PATH_PARAM, variables[0].getId());
 
     return engineInteraction.getRequest(resourcePath);
   }
