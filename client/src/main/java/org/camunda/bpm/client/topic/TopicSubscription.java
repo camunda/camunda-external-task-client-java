@@ -18,6 +18,7 @@ package org.camunda.bpm.client.topic;
 
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -96,6 +97,11 @@ public interface TopicSubscription {
    * @return the process definition version tag associated with the external task which are supposed to be fetched and locked
    */
   String getProcessDefinitionVersionTag();
+
+  /**
+   * @return the process variables associated with the external task which are supposed to be fetched and locked
+   */
+  HashMap<String, Object> getProcessVariables();
 
   /**
    * @return the tenant id presence for the external tasks which are supposed to be fetched and locked

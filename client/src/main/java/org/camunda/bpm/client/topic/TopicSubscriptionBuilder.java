@@ -16,6 +16,8 @@
  */
 package org.camunda.bpm.client.topic;
 
+import java.util.Map;
+
 import org.camunda.bpm.client.exception.ExternalTaskClientException;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 
@@ -95,6 +97,20 @@ public interface TopicSubscriptionBuilder {
    * @return the builder
    */
   TopicSubscriptionBuilder processDefinitionVersionTag(String processDefinitionVersionTag);
+
+  /**
+   * @param processVariables to search for external tasks that are supposed to be
+   *                         fetched and locked
+   * @return the builder
+   */
+  TopicSubscriptionBuilder processVariablesContain(Map<String, Object> processVariables);
+
+  /**
+   * @param processVariable to search for external tasks that are supposed to be
+   *                        fetched and locked
+   * @return the builder
+   */
+  TopicSubscriptionBuilder processVariablesContain(String name, Object value);
 
   /**
    * Filter for external tasks without tenant
