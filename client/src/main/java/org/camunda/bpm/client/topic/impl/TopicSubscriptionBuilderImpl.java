@@ -112,7 +112,7 @@ public class TopicSubscriptionBuilderImpl implements TopicSubscriptionBuilder {
     return this;
   }
 
-  public TopicSubscriptionBuilder processVariablesContain(Map<String, Object> processVariables) {
+  public TopicSubscriptionBuilder processVariablesEqualsIn(Map<String, Object> processVariables) {
     ensureNotNull(processVariables, "processVariables");
     if (this.processVariables == null) {
       this.processVariables = new HashMap<>();
@@ -124,7 +124,7 @@ public class TopicSubscriptionBuilderImpl implements TopicSubscriptionBuilder {
     return this;
   }
 
-  public TopicSubscriptionBuilder processVariablesContain(String name, Object value) {
+  public TopicSubscriptionBuilder processVariableEquals(String name, Object value) {
     ensureNotNull(name, "processVariableName");
     if (this.processVariables == null) {
       this.processVariables = new HashMap<>();

@@ -99,18 +99,19 @@ public interface TopicSubscriptionBuilder {
   TopicSubscriptionBuilder processDefinitionVersionTag(String processDefinitionVersionTag);
 
   /**
-   * @param processVariables to search for external tasks that are supposed to be
-   *                         fetched and locked
+   * @param processVariables of which the external tasks to be retrieved are related to
+   * 
    * @return the builder
    */
-  TopicSubscriptionBuilder processVariablesContain(Map<String, Object> processVariables);
+  TopicSubscriptionBuilder processVariablesEqualsIn(Map<String, Object> processVariables);
 
   /**
-   * @param processVariable to search for external tasks that are supposed to be
-   *                        fetched and locked
+   * @param processVariables of which the external tasks to be retrieved are related to
+   * When called more than once, retrieves tasks related to ANY of the given processVariables
+   * In such cases, consider using <code>processVariablesEqualsIn(Map<String, Object>)</code> instead
    * @return the builder
    */
-  TopicSubscriptionBuilder processVariablesContain(String name, Object value);
+  TopicSubscriptionBuilder processVariableEquals(String name, Object value);
 
   /**
    * Filter for external tasks without tenant
