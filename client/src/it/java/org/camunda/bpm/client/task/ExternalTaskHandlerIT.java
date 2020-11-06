@@ -297,7 +297,7 @@ public class ExternalTaskHandlerIT {
   public void shouldLock() {
     // given
     RecordingExternalTaskHandler handler = new RecordingExternalTaskHandler((task, client) -> {
-      client.unlock(task);
+      // an external task may be locked again by the same worker
       client.lock(task, LOCK_DURATION * 10);
     });
 
@@ -317,7 +317,7 @@ public class ExternalTaskHandlerIT {
   public void shouldLockById() {
     // given
     RecordingExternalTaskHandler handler = new RecordingExternalTaskHandler((task, client) -> {
-      client.unlock(task);
+      // an external task may be locked again by the same worker
       client.lock(task.getId(), LOCK_DURATION * 10);
     });
 
